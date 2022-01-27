@@ -7,6 +7,31 @@ import (
 )
 
 var (
+    queryStmtFetchColumns = `
+    SELECT
+        co.*,
+        tmp.column_comment as comment
+    FROM information_schema.columns co
+        LEFT JOIN (
+            SELECT
+                cols.column_name,
+                (
+                    SELECT
+                        pg_catalog.col_description(c.oid, cols.ordinal_position::int)
+                    FROM
+                        pg_catalog.pg_class c
+                    WHERE
+                        c.oid = (SELECT ('"' || cols.table_name || '"')::regclass::oid)
+                        AND c.relname = cols.table_name
+            ) AS column_comment
+            FROM
+                information_schema.columns cols
+            WHERE
+                cols.table_name = ?
+        ) AS tmp ON tmp.column_name = co.column_name
+    WHERE
+        table_name = ?`
+    
     queryStmtFetchPKConstraints = `
     SELECT
         kcu.column_name AS column_name,
@@ -91,9 +116,7 @@ func (r *Repo) GetTables() ([]database.TableDef, *pkg.Error) {
 // GetColumnsOfTable retrieves and returns tha column details of a table.
 func (r *Repo) GetColumnsOfTable(tableName string) ([]database.ColumnDef, *pkg.Error) {
     var columnDefList []database.ColumnDef
-    _, execErr := r.session.Select("*").
-        From("information_schema.columns").
-        Where("table_name = ?", tableName).
+    _, execErr := r.session.SelectBySql(queryStmtFetchColumns, tableName, tableName).
         Load(&columnDefList)
     if execErr != nil {
         err := &pkg.Error{Err: execErr}

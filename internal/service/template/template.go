@@ -13,9 +13,7 @@ var (
 
 Database: {{ .DatabaseName }}
 
-## Table of contents
-
-Tables:
+Table of contents
 {{ range .TableList }}
 * [Table: {{ .TableName }}](#table-{{ .TableName }})
   * [Field Details](#field-details-{{ .TableName }})
@@ -44,11 +42,12 @@ Tables:
 | {{ .Name }} | {{ .Type }} | {{ .Columns }} | {{ .References }} |
 {{- end }}
 
-[Top :top:](#table-of-contents)
+[Top :top:](#data-directory)
 {{- end }}
 `
 )
 
+// Engine describes the template engine service.
 type Engine struct {}
 
 // New creates and returns a new Engine service instance.

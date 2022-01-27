@@ -7,13 +7,13 @@ type TableDef struct {
 
 // ColumnDef describes the column related info as they are retrieved from information_schema.columns.
 type ColumnDef struct {
-    OrdinalPosition int     `db:"ordinal_position"`
-    ColumnName      string  `db:"column_name"`
-    Default         *string `db:"column_default"`
-    IsNullable      string  `db:"is_nullable"` // Can be "YES" or "NO"
-    DataType        string  `db:"data_type"`
-    UDataType       string  `db:"udt_name"`
-    Comment         string  `db:"comment"` // for new this field is empty as we are not fetching it properly.
+    OrdinalPosition int      `db:"ordinal_position"`
+    ColumnName      string   `db:"column_name"`
+    Default         *string  `db:"column_default"`
+    IsNullable      string   `db:"is_nullable"` // Can be "YES" or "NO"
+    DataType        string   `db:"data_type"`
+    UDataType       string   `db:"udt_name"`
+    Comment         *string  `db:"comment"`
 }
 
 // PKConstraintDef describes the columns that are part of the primary key of a table.
