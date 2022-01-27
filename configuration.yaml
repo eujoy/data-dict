@@ -1,0 +1,7 @@
+application:
+  authors:
+    - name: "Angelos Giannis"
+      email: "angelos.giannis@gmail.com"
+  name: "DAta Dictionary Creator"
+  usage: "Create the data dictionary for any database."
+  version: "0.0.1"
