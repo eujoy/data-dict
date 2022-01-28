@@ -8,45 +8,6 @@ import (
     "github.com/eujoy/data-dict/pkg"
 )
 
-var (
-    dataDirectoryTemplateMarkdown = `# Data Directory
-
-Database: {{ .DatabaseName }}
-
-Table of contents
-{{ range .TableList }}
-* [Table: {{ .TableName }}](#table-{{ .TableName }})
-  * [Field Details](#field-details-{{ .TableName }})
-  * [Constraints](#constraints-{{ .TableName }})
-{{- end }}
-
-----
-
-{{- range .TableList }}
-
-## Table: {{ .TableName }}
-
-### Field Details: {{ .TableName }}
-
-| #   | Name | Data Type | PK  | FK  | UQ  | Not null | Default Value | Description |
-| :-: | :--- | :-------- | :-: | :-: | :-: | :------: | :------------ | :---------- |
-{{- range .ColumnList }}
-| {{ .Ordinal }} | {{ .Name }} | {{ .DataType }} | {{ .PK }} | {{ .FK }} | {{ .UQ }} | {{ .NotNull }} | {{ .DefaultValue }} | {{ .Comment }} |
-{{- end }}
-
-### Constraints: {{ .TableName }}
-
-| Name | Type | Column(s) | References |
-| :--- | :--- | :-------- | :--------- |
-{{- range .ConstraintsList }}
-| {{ .Name }} | {{ .Type }} | {{ .Columns }} | {{ .References }} |
-{{- end }}
-
-[Top :top:](#data-directory)
-{{- end }}
-`
-)
-
 // Engine describes the template engine service.
 type Engine struct {}
 
@@ -71,5 +32,24 @@ func (eng *Engine) GenerateMarkdown(templateValues domain.TemplateValues) *pkg.E
         return err
     }
 
+    return nil
+}
+
+// GenerateHTML generates and prints the markdown template using the provided values.
+func (eng *Engine) GenerateHTML(templateValues domain.TemplateValues) *pkg.Error {
+    t, templateErr := template.New("template").Parse(dataDirectoryTemplateHTML)
+    if templateErr != nil {
+        err := &pkg.Error{Err: templateErr}
+        err.LogError()
+        return err
+    }
+    
+    tmplExecErr := t.Execute(os.Stdout, templateValues)
+    if tmplExecErr != nil {
+        err := &pkg.Error{Err: tmplExecErr}
+        err.LogError()
+        return err
+    }
+    
     return nil
 }

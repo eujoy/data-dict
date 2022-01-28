@@ -1,7 +1,6 @@
 package decorator
 
 import (
-    "fmt"
     "sort"
     
     "github.com/eujoy/data-dict/internal/model/database"
@@ -22,26 +21,28 @@ type Service struct {
     repo repo
     err *pkg.Error
 
-    tableDefList []database.TableDef
-    columnDefMap map[string][]database.ColumnDef
-    primaryKeyDefMap map[string][]database.PKConstraintDef
-    foreignKeyDefMap map[string][]database.FKConstraintDef
+    databaseName            string
+    tableDefList            []database.TableDef
+    columnDefMap            map[string][]database.ColumnDef
+    primaryKeyDefMap        map[string][]database.PKConstraintDef
+    foreignKeyDefMap        map[string][]database.FKConstraintDef
     genericConstraintDefMap map[string][]database.GenericConstraintDef
 }
 
 // New creates and returns a new decorator service.
-func New(repo repo) *Service {
+func New(repo repo, databaseName string) *Service {
     columnDefMap := make(map[string][]database.ColumnDef)
     primaryKeyDefMap := make(map[string][]database.PKConstraintDef)
     foreignKeyDefMap := make(map[string][]database.FKConstraintDef)
     genericConstraintDefMap := make(map[string][]database.GenericConstraintDef)
 
     return &Service{
-        repo: repo,
-        tableDefList: []database.TableDef{},
-        columnDefMap: columnDefMap,
-        primaryKeyDefMap: primaryKeyDefMap,
-        foreignKeyDefMap: foreignKeyDefMap,
+        repo:                    repo,
+        databaseName:            databaseName,
+        tableDefList:            []database.TableDef{},
+        columnDefMap:            columnDefMap,
+        primaryKeyDefMap:        primaryKeyDefMap,
+        foreignKeyDefMap:        foreignKeyDefMap,
         genericConstraintDefMap: genericConstraintDefMap,
     }
 }
@@ -144,16 +145,17 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
         return domain.TemplateValues{}, s.err
     }
 
-    var templateValues domain.TemplateValues
+    templateValues := domain.TemplateValues{DatabaseName: s.databaseName}
     for _, tb := range s.tableDefList {
         var constraintsList []domain.ConstraintTmplValue
 
         for _, pk := range s.primaryKeyDefMap[tb.TableName] {
             constr := domain.ConstraintTmplValue{
-                Name:       pk.ConstraintName,
-                Type:       "PRIMARY KEY",
-                Columns:    pk.ColumnName,
-                References: "",
+                Name:             pk.ConstraintName,
+                Type:             "PRIMARY KEY",
+                Columns:          pk.ColumnName,
+                ReferencesTable:  "",
+                ReferencesColumn: "",
             }
 
             constraintsList = append(constraintsList, constr)
@@ -161,10 +163,11 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
 
         for _, fk := range s.foreignKeyDefMap[tb.TableName] {
             constr := domain.ConstraintTmplValue{
-                Name:       fk.ConstraintName,
-                Type:       "FOREIGN KEY",
-                Columns:    fk.SourceColumnName,
-                References: fmt.Sprintf("[%v.%v](#table-%v)", fk.ForeignTableName, fk.ForeignColumnName, fk.ForeignTableName),
+                Name:             fk.ConstraintName,
+                Type:             "FOREIGN KEY",
+                Columns:          fk.SourceColumnName,
+                ReferencesTable:  fk.ForeignTableName,
+                ReferencesColumn: fk.ForeignColumnName,
             }
 
             constraintsList = append(constraintsList, constr)
@@ -172,10 +175,11 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
 
         for _, gen := range s.genericConstraintDefMap[tb.TableName] {
             constr := domain.ConstraintTmplValue{
-                Name:       gen.ConstraintName,
-                Type:       gen.ConstraintType,
-                Columns:    gen.ColumnName,
-                References: "",
+                Name:             gen.ConstraintName,
+                Type:             gen.ConstraintType,
+                Columns:          gen.ColumnName,
+                ReferencesTable:  "",
+                ReferencesColumn: "",
             }
 
             constraintsList = append(constraintsList, constr)
@@ -183,11 +187,6 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
 
         var columnList []domain.ColumnTmplValue
         for _, col := range s.columnDefMap[tb.TableName] {
-            isNullable := ""
-            if col.IsNullable == "YES" {
-                isNullable = ":heavy_check_mark:"
-            }
-
             defaultVal := ""
             if col.Default != nil {
                 defaultVal = *col.Default
@@ -205,7 +204,7 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
                 PK:           s.getPKValueForColumn(tb.TableName, col.ColumnName),
                 FK:           s.getFKValueForColumn(tb.TableName, col.ColumnName),
                 UQ:           s.getUQValueForColumn(tb.TableName, col.ColumnName),
-                NotNull:      isNullable,
+                NotNull:      col.IsNullable == "YES",
                 DefaultValue: defaultVal,
                 Comment:      commentVal,
             }
@@ -235,32 +234,32 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
     return templateValues, nil
 }
 
-func (s *Service) getPKValueForColumn(tableName string, columnName string) string {
+func (s *Service) getPKValueForColumn(tableName string, columnName string) bool {
     for _, pk := range s.primaryKeyDefMap[tableName] {
         if columnName == pk.ColumnName {
-            return ":heavy_check_mark:"
+            return true
         }
     }
 
-    return ""
+    return false
 }
 
-func (s *Service) getFKValueForColumn(tableName string, columnName string) string {
+func (s *Service) getFKValueForColumn(tableName string, columnName string) bool {
     for _, fk := range s.foreignKeyDefMap[tableName] {
         if columnName == fk.SourceColumnName {
-            return ":heavy_check_mark:"
+            return true
         }
     }
 
-    return ""
+    return false
 }
 
-func (s *Service) getUQValueForColumn(tableName string, columnName string) string {
+func (s *Service) getUQValueForColumn(tableName string, columnName string) bool {
     for _, gen := range s.genericConstraintDefMap[tableName] {
         if columnName == gen.ColumnName && gen.ConstraintType == "UNIQUE" {
-            return ":heavy_check_mark:"
+            return true
         }
     }
 
-    return ""
+    return false
 }

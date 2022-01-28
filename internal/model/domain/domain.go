@@ -18,18 +18,20 @@ type ColumnTmplValue struct {
     Ordinal      int
     Name         string
     DataType     string
-    PK           string
-    FK           string
-    UQ           string
-    NotNull      string
+    PK           bool
+    FK           bool
+    UQ           bool
+    NotNull      bool
     DefaultValue string
     Comment      string
 }
 
 // ConstraintTmplValue describes the constraint values for the template.
 type ConstraintTmplValue struct {
-    Name       string
-    Type       string
-    Columns    string
-    References string
+    Name             string
+    Type             string
+    Columns          string
+    References       string
+    ReferencesTable  string
+    ReferencesColumn string
 }
