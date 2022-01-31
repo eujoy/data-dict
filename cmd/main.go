@@ -1,13 +1,17 @@
 package main
 
 import (
+    "fmt"
+    "io/ioutil"
     "os"
-
+    "path/filepath"
+    
     "github.com/eujoy/data-dict/internal/config"
     "github.com/eujoy/data-dict/internal/infra/db/postgres"
     postgresRepository "github.com/eujoy/data-dict/internal/repository/postgres"
     "github.com/eujoy/data-dict/internal/service/decorator"
     "github.com/eujoy/data-dict/internal/service/template"
+    "github.com/eujoy/data-dict/pkg"
     "github.com/gocraft/dbr/v2"
     "github.com/urfave/cli/v2"
 )
@@ -25,7 +29,7 @@ func main() {
     var app = cli.NewApp()
     info(app, cfg)
 
-    var outputType string
+    var output, outputType, outputFile string
     var dbHost, dbName, dbUser, dbPass string
     var dbPort int
 
@@ -40,11 +44,27 @@ func main() {
             Flags: []cli.Flag{
                 &cli.StringFlag{
                     Name:        "outputType",
-                    Aliases:     []string{"o", "O"},
+                    Aliases:     []string{"t", "T"},
                     Usage:       "Define the output type. Allowed values: ['er', 'html', 'md']",
                     Required:    false,
-                    Value:       "markdown",
+                    Value:       "md",
                     Destination: &outputType,
+                },
+                &cli.StringFlag{
+                    Name:        "output",
+                    Aliases:     []string{"o", "O"},
+                    Usage:       "Define the output of the generated data. Allowed values: ['std', 'file']",
+                    Required:    false,
+                    Value:       "std",
+                    Destination: &output,
+                },
+                &cli.StringFlag{
+                    Name:        "outputFile",
+                    Aliases:     []string{"f", "F"},
+                    Usage:       "Define the output file to publish the data to. This value will be used only in combination when [--output file] is provided.",
+                    Required:    false,
+                    Value:       "std",
+                    Destination: &outputFile,
                 },
                 &cli.StringFlag{
                     Name:        "dbHost",
@@ -105,8 +125,32 @@ func main() {
                     return err.Err
                 }
 
-                err = tmplEngine.Generate(outputType, templateValues)
+                var generatedData string
+                generatedData, err = tmplEngine.Generate(outputType, templateValues)
                 if err != nil {
+                    err.LogError()
+                    return err.Err
+                }
+    
+                switch output {
+                case "std":
+                    fmt.Print(generatedData)
+                case "file":
+                    fileExtension := filepath.Ext(outputFile)
+                    if fmt.Sprintf(".%v", outputType) != fileExtension {
+                        err = &pkg.Error{Err: fmt.Errorf("incompatible types provided for output type '%v' and file extention '%v'", outputType, fileExtension)}
+                        err.LogError()
+                        return err.Err
+                    }
+                    
+                    fileWriteErr := ioutil.WriteFile(outputFile, []byte(generatedData), 0755)
+                    if fileWriteErr != nil {
+                        err = &pkg.Error{Err: fmt.Errorf("failed to write data to file '%v' with error: %v", outputFile, fileWriteErr)}
+                        err.LogError()
+                        return err.Err
+                    }
+                default:
+                    err = &pkg.Error{Err: fmt.Errorf("invalid output source was provided: %v", output)}
                     err.LogError()
                     return err.Err
                 }

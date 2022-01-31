@@ -1,10 +1,10 @@
 package template
 
 import (
+    "bytes"
     "fmt"
     "html/template"
-    "os"
-
+    
     "github.com/eujoy/data-dict/internal/model/domain"
     "github.com/eujoy/data-dict/pkg"
 )
@@ -24,7 +24,7 @@ func New() *Engine {
 }
 
 // Generate and print the respective template.
-func (eng *Engine) Generate(outputType string, templateValues domain.TemplateValues) *pkg.Error {
+func (eng *Engine) Generate(outputType string, templateValues domain.TemplateValues) (string, *pkg.Error) {
     switch outputType {
     case erDiagram:
         return eng.generateType(dataDirectoryTemplateERDiagram, templateValues)
@@ -33,25 +33,26 @@ func (eng *Engine) Generate(outputType string, templateValues domain.TemplateVal
     case markdown:
         return eng.generateType(dataDirectoryTemplateMarkdown, templateValues)
     default:
-        return &pkg.Error{Err: fmt.Errorf("invalid output type provided: %v", outputType)}
+        return "", &pkg.Error{Err: fmt.Errorf("invalid output type provided: %v", outputType)}
     }
 }
 
 // generateType prepares, generates and print the respective template requested.
-func (eng *Engine) generateType(typeTemplate string, templateValues domain.TemplateValues) *pkg.Error {
+func (eng *Engine) generateType(typeTemplate string, templateValues domain.TemplateValues) (string, *pkg.Error) {
     t, templateErr := template.New("template").Parse(typeTemplate)
     if templateErr != nil {
         err := &pkg.Error{Err: templateErr}
         err.LogError()
-        return err
+        return "", err
     }
-
-    tmplExecErr := t.Execute(os.Stdout, templateValues)
+    
+    var tplData bytes.Buffer
+    tmplExecErr := t.Execute(&tplData, templateValues)
     if tmplExecErr != nil {
         err := &pkg.Error{Err: tmplExecErr}
         err.LogError()
-        return err
+        return "", err
     }
 
-    return nil
+    return tplData.String(), nil
 }
