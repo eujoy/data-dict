@@ -30,7 +30,7 @@ type ColumnTmplValue struct {
 type ConstraintTmplValue struct {
     Name             string
     Type             string
-    Columns          string
+    Column           string
     References       string
     ReferencesTable  string
     ReferencesColumn string

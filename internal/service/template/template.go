@@ -1,11 +1,18 @@
 package template
 
 import (
+    "fmt"
     "html/template"
     "os"
 
     "github.com/eujoy/data-dict/internal/model/domain"
     "github.com/eujoy/data-dict/pkg"
+)
+
+const (
+    erDiagram = "er"
+    html = "html"
+    markdown = "md"
 )
 
 // Engine describes the template engine service.
@@ -16,40 +23,35 @@ func New() *Engine {
     return &Engine{}
 }
 
-// GenerateMarkdown generates and prints the markdown template using the provided values.
-func (eng *Engine) GenerateMarkdown(templateValues domain.TemplateValues) *pkg.Error {
-    t, templateErr := template.New("template").Parse(dataDirectoryTemplateMarkdown)
-    if templateErr != nil {
-        err := &pkg.Error{Err: templateErr}
-        err.LogError()
-        return err
+// Generate and print the respective template.
+func (eng *Engine) Generate(outputType string, templateValues domain.TemplateValues) *pkg.Error {
+    switch outputType {
+    case erDiagram:
+        return eng.generateType(dataDirectoryTemplateERDiagram, templateValues)
+    case html:
+        return eng.generateType(dataDirectoryTemplateHTML, templateValues)
+    case markdown:
+        return eng.generateType(dataDirectoryTemplateMarkdown, templateValues)
+    default:
+        return &pkg.Error{Err: fmt.Errorf("invalid output type provided: %v", outputType)}
     }
-
-    tmplExecErr := t.Execute(os.Stdout, templateValues)
-    if tmplExecErr != nil {
-        err := &pkg.Error{Err: tmplExecErr}
-        err.LogError()
-        return err
-    }
-
-    return nil
 }
 
-// GenerateHTML generates and prints the markdown template using the provided values.
-func (eng *Engine) GenerateHTML(templateValues domain.TemplateValues) *pkg.Error {
-    t, templateErr := template.New("template").Parse(dataDirectoryTemplateHTML)
+// generateType prepares, generates and print the respective template requested.
+func (eng *Engine) generateType(typeTemplate string, templateValues domain.TemplateValues) *pkg.Error {
+    t, templateErr := template.New("template").Parse(typeTemplate)
     if templateErr != nil {
         err := &pkg.Error{Err: templateErr}
         err.LogError()
         return err
     }
-    
+
     tmplExecErr := t.Execute(os.Stdout, templateValues)
     if tmplExecErr != nil {
         err := &pkg.Error{Err: tmplExecErr}
         err.LogError()
         return err
     }
-    
+
     return nil
 }

@@ -1,15 +1,13 @@
 package main
 
 import (
-    "fmt"
     "os"
-    
+
     "github.com/eujoy/data-dict/internal/config"
     "github.com/eujoy/data-dict/internal/infra/db/postgres"
     postgresRepository "github.com/eujoy/data-dict/internal/repository/postgres"
     "github.com/eujoy/data-dict/internal/service/decorator"
     "github.com/eujoy/data-dict/internal/service/template"
-    "github.com/eujoy/data-dict/pkg"
     "github.com/gocraft/dbr/v2"
     "github.com/urfave/cli/v2"
 )
@@ -36,14 +34,14 @@ func main() {
 
     app.Commands = []*cli.Command{
         {
-            Name:    "create",
-            Aliases: []string{"c"},
-            Usage:   "Create the data dictionary from the database.",
+            Name:    "generate",
+            Aliases: []string{"gen"},
+            Usage:   "Generate the data dictionary / model representation from the database.",
             Flags: []cli.Flag{
                 &cli.StringFlag{
-                    Name:        "output",
+                    Name:        "outputType",
                     Aliases:     []string{"o", "O"},
-                    Usage:       "Define the output type. Allowed values: ['md', 'html']",
+                    Usage:       "Define the output type. Allowed values: ['er', 'html', 'md']",
                     Required:    false,
                     Value:       "markdown",
                     Destination: &outputType,
@@ -107,17 +105,12 @@ func main() {
                     return err.Err
                 }
 
-                switch outputType {
-                case "md":
-                    tmplEngine.GenerateMarkdown(templateValues)
-                case "html":
-                    tmplEngine.GenerateHTML(templateValues)
-                default:
-                    err = &pkg.Error{Err: fmt.Errorf("invalid value provided for output type: %v", outputType)}
+                err = tmplEngine.Generate(outputType, templateValues)
+                if err != nil {
                     err.LogError()
                     return err.Err
                 }
-                
+
                 return nil
             },
         },

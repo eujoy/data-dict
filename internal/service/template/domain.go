@@ -1,6 +1,30 @@
 package template
 
 var (
+	dataDirectoryTemplateERDiagram = `# ER Diagram Definition
+
+title {label:"{{ .DatabaseName }}"}
+
+# Definition of tables.{{print "\n"}}
+
+{{- range .TableList }}
+[{{ .TableName }}]
+{{- range .ColumnList }}
+	{{ if .PK }}*{{ end }}{{ if .FK }}+{{ end }}{{ .Name }} {label:"{{ .DataType }}"}
+{{- end }}
+{{ end }}
+# -----
+
+# Definition of foreign keys.
+
+{{ range .TableList }}
+{{- $tableName := .TableName }}
+{{- range .ConstraintsList }}
+{{- if .ReferencesTable }}{{ $tableName }} *--* {{ .ReferencesTable }}{label:"{{ $tableName }}.{{ .Column }} -> {{ .ReferencesTable }}.{{ .ReferencesColumn }}"}{{print "\n"}}{{- end }}
+{{- end }}
+{{- end }}
+`
+
 	dataDirectoryTemplateMarkdown = `# Data Directory
 
 Database: {{ .DatabaseName }}
@@ -31,7 +55,7 @@ Table of contents
 | Name | Type | Column(s) | References |
 | :--- | :--- | :-------- | :--------- |
 {{- range .ConstraintsList }}
-| {{ .Name }} | {{ .Type }} | {{ .Columns }} | {{ if .ReferencesTable }}[{{ .ReferencesTable }}.{{ .ReferencesColumn }}](#table-{{ .ReferencesTable }}){{ end }} |
+| {{ .Name }} | {{ .Type }} | {{ .Column }} | {{ if .ReferencesTable }}[{{ .ReferencesTable }}.{{ .ReferencesColumn }}](#table-{{ .ReferencesTable }}){{ end }} |
 {{- end }}
 
 [Top :top:](#data-directory)
@@ -161,7 +185,7 @@ Table of contents
                 <tr>
                     <td style="text-align:left">{{ .Name }}</td>
                     <td style="text-align:left">{{ .Type }}</td>
-                    <td style="text-align:left">{{ .Columns }}</td>
+                    <td style="text-align:left">{{ .Column }}</td>
                     <td style="text-align:left">{{ if .ReferencesTable }}<a href="#table-{{ .ReferencesTable }}">{{ .ReferencesTable }}.{{ .ReferencesColumn }}</a>{{ end }}</td>
                 </tr>
             </tbody>

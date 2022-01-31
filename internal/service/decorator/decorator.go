@@ -153,7 +153,7 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
             constr := domain.ConstraintTmplValue{
                 Name:             pk.ConstraintName,
                 Type:             "PRIMARY KEY",
-                Columns:          pk.ColumnName,
+                Column:           pk.ColumnName,
                 ReferencesTable:  "",
                 ReferencesColumn: "",
             }
@@ -165,7 +165,7 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
             constr := domain.ConstraintTmplValue{
                 Name:             fk.ConstraintName,
                 Type:             "FOREIGN KEY",
-                Columns:          fk.SourceColumnName,
+                Column:           fk.SourceColumnName,
                 ReferencesTable:  fk.ForeignTableName,
                 ReferencesColumn: fk.ForeignColumnName,
             }
@@ -177,7 +177,7 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
             constr := domain.ConstraintTmplValue{
                 Name:             gen.ConstraintName,
                 Type:             gen.ConstraintType,
-                Columns:          gen.ColumnName,
+                Column:           gen.ColumnName,
                 ReferencesTable:  "",
                 ReferencesColumn: "",
             }
