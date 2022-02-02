@@ -32,5 +32,5 @@ OPTIONS:
 An example for executing this is :
 
 ```shell script
-➜ go run cmd/main.go generate -l localhost -p 5432 -n my_database -u my_user -s my_password -c public -t html -o file -f file.html
+➜ go run cmd/main.go generate -l localhost -p 5432 -n my_database -u my_user -s my_password -t html -o file -f file.html
 ```
