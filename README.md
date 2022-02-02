@@ -23,6 +23,7 @@ OPTIONS:
    --dbName value, -n value, -N value      Define the name of the database.
    --dbUser value, -u value, -U value      Define the user of the database.
    --dbPass value, -s value, -S value      Define the password of the database.
+   --dbSchema value, -c value, -C value    Define the schema of the database.
    --help, -h                              show help (default: false)
    
 ➜ 
@@ -31,5 +32,5 @@ OPTIONS:
 An example for executing this is :
 
 ```shell script
-➜ go run cmd/main.go generate -l localhost -p 5432 -n my_database -u my_user -s my_password -t html -o file -f file.html
+➜ go run cmd/main.go generate -l localhost -p 5432 -n my_database -u my_user -s my_password -c public -t html -o file -f file.html
 ```
