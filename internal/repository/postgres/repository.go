@@ -4,7 +4,6 @@ import (
     "github.com/eujoy/data-dict/internal/model/database"
     "github.com/eujoy/data-dict/pkg"
     "github.com/gocraft/dbr/v2"
-    "fmt"
 )
 
 var (
@@ -119,7 +118,7 @@ func (r *Repo) GetTables() ([]database.TableDef, *pkg.Error) {
 // GetColumnsOfTable retrieves and returns tha column details of a table.
 func (r *Repo) GetColumnsOfTable(tableName string) ([]database.ColumnDef, *pkg.Error) {
     var columnDefList []database.ColumnDef
-    _, execErr := r.session.SelectBySql(queryStmtFetchColumns, tableName, tableName).
+    _, execErr := r.session.SelectBySql(queryStmtFetchColumns, r.dbSchema + "." + tableName, tableName).
         Load(&columnDefList)
     if execErr != nil {
         err := &pkg.Error{Err: execErr}
