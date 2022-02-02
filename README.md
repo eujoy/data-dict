@@ -23,7 +23,7 @@ OPTIONS:
    --dbName value, -n value, -N value      Define the name of the database.
    --dbUser value, -u value, -U value      Define the user of the database.
    --dbPass value, -s value, -S value      Define the password of the database.
-   --dbSchema value, -c value, -C value    Define the schema of the database.
+   --dbSchema value, -c value, -C value    Define the schema of the database.  (default: "public")
    --help, -h                              show help (default: false)
    
 ➜ 
