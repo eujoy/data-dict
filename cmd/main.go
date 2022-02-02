@@ -30,7 +30,7 @@ func main() {
     info(app, cfg)
 
     var output, outputType, outputFile string
-    var dbHost, dbName, dbUser, dbPass string
+    var dbHost, dbName, dbUser, dbPass, dbSchema string
     var dbPort int
 
     var dbConn *dbr.Connection
@@ -101,6 +101,14 @@ func main() {
                     Required:    true,
                     Destination: &dbPass,
                 },
+                &cli.StringFlag{
+                    Name:        "dbSchema",
+                    Aliases:     []string{"c", "C"},
+                    Usage:       "Define the schema of the database.",
+                    Required:    false,
+                    Value:       "public",
+                    Destination: &dbSchema,
+                },
             },
             Action: func(c *cli.Context) error {
                 dbConn, err = postgres.New(dbHost, dbPort, dbName, dbUser, dbPass)
@@ -110,8 +118,7 @@ func main() {
                 }
 
                 session := dbConn.NewSession(nil)
-
-                repo := postgresRepository.New(dbName, session)
+                repo := postgresRepository.New(dbName, dbSchema, session)
                 decoratorService := decorator.New(repo, dbName)
 
                 templateValues, err := decoratorService.GetTables().

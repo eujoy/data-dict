@@ -85,13 +85,15 @@ var (
 // Repo describes the repository structure for the postgres client.
 type Repo struct {
     dbName string
+    dbSchema string
     session *dbr.Session
 }
 
 // New creates and returns a new repository structure.
-func New(dbName string, session *dbr.Session) *Repo {
+func New(dbName string, dbSchema string, session *dbr.Session) *Repo {
     return &Repo{
         dbName: dbName,
+        dbSchema: dbSchema,
         session: session,
     }
 }
@@ -102,7 +104,7 @@ func (r *Repo) GetTables() ([]database.TableDef, *pkg.Error) {
     _, execErr := r.session.Select("table_name").
         From("information_schema.tables").
         Where("table_catalog = ?", r.dbName).
-        Where("table_schema = ?", "public").
+        Where("table_schema = ?", r.dbSchema).
         Where("table_type = ?", "BASE TABLE").
         Load(&tableDefList)
     if execErr != nil {
@@ -116,7 +118,7 @@ func (r *Repo) GetTables() ([]database.TableDef, *pkg.Error) {
 // GetColumnsOfTable retrieves and returns tha column details of a table.
 func (r *Repo) GetColumnsOfTable(tableName string) ([]database.ColumnDef, *pkg.Error) {
     var columnDefList []database.ColumnDef
-    _, execErr := r.session.SelectBySql(queryStmtFetchColumns, tableName, tableName).
+    _, execErr := r.session.SelectBySql(queryStmtFetchColumns, r.dbSchema + "." + tableName, tableName).
         Load(&columnDefList)
     if execErr != nil {
         err := &pkg.Error{Err: execErr}
