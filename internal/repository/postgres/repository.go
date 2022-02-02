@@ -4,6 +4,7 @@ import (
     "github.com/eujoy/data-dict/internal/model/database"
     "github.com/eujoy/data-dict/pkg"
     "github.com/gocraft/dbr/v2"
+    "fmt"
 )
 
 var (
@@ -85,13 +86,15 @@ var (
 // Repo describes the repository structure for the postgres client.
 type Repo struct {
     dbName string
+    dbSchema string
     session *dbr.Session
 }
 
 // New creates and returns a new repository structure.
-func New(dbName string, session *dbr.Session) *Repo {
+func New(dbName string, dbSchema string, session *dbr.Session) *Repo {
     return &Repo{
         dbName: dbName,
+        dbSchema: dbSchema,
         session: session,
     }
 }
@@ -102,7 +105,7 @@ func (r *Repo) GetTables() ([]database.TableDef, *pkg.Error) {
     _, execErr := r.session.Select("table_name").
         From("information_schema.tables").
         Where("table_catalog = ?", r.dbName).
-        Where("table_schema = ?", "public").
+        Where("table_schema = ?", r.dbSchema).
         Where("table_type = ?", "BASE TABLE").
         Load(&tableDefList)
     if execErr != nil {
