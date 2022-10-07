@@ -20,7 +20,7 @@ title {label:"{{ .DatabaseName }}"}
 {{ range .TableList }}
 {{- $tableName := .TableName }}
 {{- range .ConstraintsList }}
-{{- if .ReferencesTable }}{{ $tableName }} *--* {{ .ReferencesTable }}{label:"{{ $tableName }}.{{ .Column }} -> {{ .ReferencesTable }}.{{ .ReferencesColumn }}"}{{print "\n"}}{{- end }}
+{{- if .ReferencesTable }}{{ $tableName }} *--* {{ .ReferencesTable }} {label:"{{ $tableName }}.{{ .Column }} relates to {{ .ReferencesTable }}.{{ .ReferencesColumn }}"}{{print "\n"}}{{- end }}
 {{- end }}
 {{- end }}
 `
@@ -61,7 +61,7 @@ Table of contents
 [Top :top:](#data-directory)
 {{- end }}
 `
-	
+
 	dataDirectoryTemplateHTML = `<html>
     <head>
         <title>Database: {{ .DatabaseName }}</title>
