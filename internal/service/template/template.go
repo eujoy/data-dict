@@ -4,19 +4,20 @@ import (
     "bytes"
     "fmt"
     "html/template"
-    
+
     "github.com/eujoy/data-dict/internal/model/domain"
     "github.com/eujoy/data-dict/pkg"
 )
 
 const (
     erDiagram = "er"
-    html = "html"
-    markdown = "md"
+    html      = "html"
+    markdown  = "md"
+    mermaid   = "mermaid"
 )
 
 // Engine describes the template engine service.
-type Engine struct {}
+type Engine struct{}
 
 // New creates and returns a new Engine service instance.
 func New() *Engine {
@@ -32,6 +33,8 @@ func (eng *Engine) Generate(outputType string, templateValues domain.TemplateVal
         return eng.generateType(dataDirectoryTemplateHTML, templateValues)
     case markdown:
         return eng.generateType(dataDirectoryTemplateMarkdown, templateValues)
+    case mermaid:
+        return eng.generateType(dataDirectoryTemplateMermaid, templateValues)
     default:
         return "", &pkg.Error{Err: fmt.Errorf("invalid output type provided: %v", outputType)}
     }
@@ -45,7 +48,7 @@ func (eng *Engine) generateType(typeTemplate string, templateValues domain.Templ
         err.LogError()
         return "", err
     }
-    
+
     var tplData bytes.Buffer
     tmplExecErr := t.Execute(&tplData, templateValues)
     if tmplExecErr != nil {

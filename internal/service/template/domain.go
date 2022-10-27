@@ -1,7 +1,27 @@
 package template
 
 var (
-	dataDirectoryTemplateERDiagram = `# ER Diagram Definition
+    dataDirectoryTemplateMermaid = `erDiagram
+	{{- range .TableList }}
+	{{ .TableName }} {
+	{{- range .ColumnList }}
+		{{ .DataType }} {{ .Name }} "{{ if .PK }}PK{{ end }}{{ if .FK }}{{ if .PK }}_{{ end }}FK{{ end }}"
+	{{- end }}
+	}
+	{{ end }}
+    %% ----- Relationships ----
+    {{ range .TableList }}
+    {{- $tableName := .TableName }}
+    {{- range .ConstraintsList }}
+    {{- if .ReferencesTable }}
+    %% {{ $tableName }} }o--o{ {{ .ReferencesTable }} : "{{ $tableName }}.{{ .Column }} relates to {{ .ReferencesTable }}.{{ .ReferencesColumn }}"
+    {{ $tableName }} }o--o{ {{ .ReferencesTable }} : "{{ .Column }} to {{ .ReferencesColumn }}"
+    {{- end }}
+    {{- end }}
+    {{- end }}
+`
+
+    dataDirectoryTemplateERDiagram = `# ER Diagram Definition
 
 title {label:"{{ .DatabaseName }}"}
 
@@ -25,7 +45,7 @@ title {label:"{{ .DatabaseName }}"}
 {{- end }}
 `
 
-	dataDirectoryTemplateMarkdown = `# Data Directory
+    dataDirectoryTemplateMarkdown = `# Data Directory
 
 Database: {{ .DatabaseName }}
 
@@ -62,7 +82,7 @@ Table of contents
 {{- end }}
 `
 
-	dataDirectoryTemplateHTML = `<html>
+    dataDirectoryTemplateHTML = `<html>
     <head>
         <title>Database: {{ .DatabaseName }}</title>
         <style>

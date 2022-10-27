@@ -5,7 +5,7 @@ import (
     "io/ioutil"
     "os"
     "path/filepath"
-    
+
     "github.com/eujoy/data-dict/internal/config"
     "github.com/eujoy/data-dict/internal/infra/db/postgres"
     postgresRepository "github.com/eujoy/data-dict/internal/repository/postgres"
@@ -45,9 +45,9 @@ func main() {
                 &cli.StringFlag{
                     Name:        "outputType",
                     Aliases:     []string{"t", "T"},
-                    Usage:       "Define the output type. Allowed values: ['er', 'html', 'md']",
+                    Usage:       "Define the output type. Allowed values: ['er', 'html', 'md', 'mermaid']",
                     Required:    false,
-                    Value:       "md",
+                    Value:       "mermaid",
                     Destination: &outputType,
                 },
                 &cli.StringFlag{
@@ -138,7 +138,7 @@ func main() {
                     err.LogError()
                     return err.Err
                 }
-    
+
                 switch output {
                 case "std":
                     fmt.Print(generatedData)
@@ -149,7 +149,7 @@ func main() {
                         err.LogError()
                         return err.Err
                     }
-                    
+
                     fileWriteErr := ioutil.WriteFile(outputFile, []byte(generatedData), 0755)
                     if fileWriteErr != nil {
                         err = &pkg.Error{Err: fmt.Errorf("failed to write data to file '%v' with error: %v", outputFile, fileWriteErr)}

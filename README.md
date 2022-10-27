@@ -15,7 +15,7 @@ USAGE:
    main generate [command options] [arguments...]
 
 OPTIONS:
-   --outputType value, -t value, -T value  Define the output type. Allowed values: ['er', 'html', 'md'] (default: "md")
+   --outputType value, -t value, -T value  Define the output type. Allowed values: ['er', 'html', 'md', 'mermaid'] (default: "mermaid")
    --output value, -o value, -O value      Define the output of the generated data. Allowed values: ['std', 'file'] (default: "std")
    --outputFile value, -f value, -F value  Define the output file to publish the data to. This value will be used only in combination when [--output file] is provided. (default: "std")
    --dbHost value, -l value, -L value      Define the host of the database.

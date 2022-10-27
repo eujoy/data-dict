@@ -2,7 +2,8 @@ package decorator
 
 import (
     "sort"
-    
+    "strings"
+
     "github.com/eujoy/data-dict/internal/model/database"
     "github.com/eujoy/data-dict/internal/model/domain"
     "github.com/eujoy/data-dict/pkg"
@@ -19,7 +20,7 @@ type repo interface {
 // Service describes the decorator service for preparing and generating the template values.
 type Service struct {
     repo repo
-    err *pkg.Error
+    err  *pkg.Error
 
     databaseName            string
     tableDefList            []database.TableDef
@@ -191,7 +192,7 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
             if col.Default != nil {
                 defaultVal = *col.Default
             }
-    
+
             commentVal := ""
             if col.Comment != nil {
                 commentVal = *col.Comment
@@ -200,7 +201,7 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
             colTmplVal := domain.ColumnTmplValue{
                 Ordinal:      col.OrdinalPosition,
                 Name:         col.ColumnName,
-                DataType:     col.UDataType,
+                DataType:     strings.Replace(col.UDataType, "_", "", -1),
                 PK:           s.getPKValueForColumn(tb.TableName, col.ColumnName),
                 FK:           s.getFKValueForColumn(tb.TableName, col.ColumnName),
                 UQ:           s.getUQValueForColumn(tb.TableName, col.ColumnName),
@@ -211,11 +212,11 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
 
             columnList = append(columnList, colTmplVal)
         }
-    
+
         sort.Slice(columnList, func(i int, j int) bool {
             return columnList[i].Ordinal < columnList[j].Ordinal
         })
-    
+
         sort.Slice(constraintsList, func(i int, j int) bool {
             return constraintsList[i].Name < constraintsList[j].Name
         })
@@ -226,7 +227,7 @@ func (s *Service) PrepareTemplateValues() (domain.TemplateValues, *pkg.Error) {
             ConstraintsList: constraintsList,
         })
     }
-    
+
     sort.Slice(templateValues.TableList, func(i int, j int) bool {
         return templateValues.TableList[i].TableName < templateValues.TableList[j].TableName
     })
